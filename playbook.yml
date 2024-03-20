@@ -1,0 +1,93 @@
+---
+- name: Install Docker, Flightradar24, Piaware and Radarbox on Raspberry Pi
+  hosts: $HOST
+  become: true
+
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        upgrade: yes
+        update_cache: yes
+
+    - name: Install prerequisites (ca-certificates, curl)
+      apt:
+        name:
+          - ca-certificates
+          - curl
+        state: present
+
+    - name: Create directory for Docker keyrings
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download Docker GPG key
+      get_url:
+        url: https://download.docker.com/linux/raspbian/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
+
+    - name: Set up Dockers's APT repository
+      shell: |
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/raspbian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+      args:
+        executable: /bin/bash
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Docker packages
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Add '$USER' user to 'docker' group
+      user:
+        name: $USER
+        groups: docker
+        append: yes
+
+    - name: Start Flightradar24, Piaware and Radarbox containers
+      become_user: $USER
+      command: docker run -d -p 8080:8080 -p 8754:8754 \
+        --device=/dev/bus/usb:/dev/bus/usb \
+        -v '/etc/localtime:/etc/localtime:ro' \
+        -e 'FR24FEED_FR24KEY=$FR24KEY' \
+        -e 'FR24FEED_MLAT=yes' \
+        -e 'FR24FEED_MLAT_DASH_WITHOUT_DASH_GPS=yes' \
+        -e 'PIAWARE_FEEDER_DASH_ID=$PIAWARE_ID' \
+        -e 'HTML_SITE_LAT=$LAT' \
+        -e 'HTML_SITE_LON=$LON' \
+        -e 'HTML_SITE_ALT=$ALT' \
+        -e 'HTML_SITE_NAME=MY_SITE_NAME' \
+        -e 'MLAT_EXACT_LAT=$LAT' \
+        -e 'MLAT_EXACT_LON=$LON' \
+        -e 'MLAT_ALTITUDE_MSL_METERS=$ALT' \
+        -e 'SERVICE_ENABLE_RADARBOX=true' \
+        -e 'RADARBOX_SHARING_KEY=$RADARBOX_KEY' \
+        -e 'RADARBOX_MLAT=true' \
+        --tmpfs /run:exec,size=32M \
+        --tmpfs /planefinder/log:exec,size=32M \
+        --tmpfs /usr/lib/fr24/public_html/data:size=32M \
+        --restart always \
+        thomx/fr24feed-piaware
+     
+    - name: Reboot the system
+      reboot:
+        reboot_timeout: 3600
+
+    - name: Check if container is running from specific image
+      shell: docker ps -q --filter ancestor=thomx/fr24feed-piaware
+      register: container_running
+      ignore_errors: true
+
+    - name: Print container status
+      debug:
+        msg: "Container is {{ 'running' if container_running.stdout else 'not running' }}"
