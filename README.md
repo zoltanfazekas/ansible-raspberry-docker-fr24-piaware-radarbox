@@ -16,6 +16,7 @@ $LAT: Decimal latitude
 $LON: Decimal longitude
 $ALT: Altitude above MSL in meters
 Get your exact coordinates and altitude above sealevel in meters from one these websites:
+
 https://www.freemaptools.com/elevation-finder.htm
 
 https://www.mapcoordinates.net/en
