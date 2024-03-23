@@ -17,6 +17,7 @@ $LON: Decimal longitude
 $ALT: Altitude above MSL in meters
 Get your exact coordinates and altitude above sealevel in meters from one these websites:
 https://www.freemaptools.com/elevation-finder.htm
+
 https://www.mapcoordinates.net/en
 
 $RADARBOX_KEY: start the fr24feed-piaware docker container, then issue the following command and it will show your Radarbox sharing key: docker exec <CONTAINER ID> rbfeeder --showkey --no-start
