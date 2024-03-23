@@ -1,11 +1,12 @@
 # ansible-raspberry-docker-fr24-piaware-radarbox
-Ansible playbook for installing Docker and deploying Dockerized Flightradar24, Piaware, and Radarbox applications on Raspberry Pi
+Ansible playbook for installing Docker and deploying Dockerized Flightradar24, Piaware, and Radarbox applications on Raspberry Pi.
+Tested on headless 32-bit Raspberry Pi OS. (Raspberry Pi 3 Model B+)
 
 You can specify the following variables in this playbook or define them in a separate file:
 
 $HOST: you can define your host in a separate ansible host file, or provide the IP address
 
-$USER: your username on Raspberry
+$USER: your username on Raspberry OS
 
 $FR24KEY: you can find your FR24 sharing key here: https://www.flightradar24.com/account/data-sharing
 
